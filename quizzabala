@@ -1,5 +1,540 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const PersonalityQuizApp());
+}
+
+class PersonalityQuizApp extends StatelessWidget {
+  const PersonalityQuizApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
+}
+
+/* ==========================
+   GLOBAL HISTORY
+========================== */
+class GlobalHistory {
+  static List<QuizRecord> history = [];
+}
+
+class QuizRecord {
+  final String result;
+  final List<int> answers;
+  final DateTime dateTime;
+
+  QuizRecord(this.result, this.answers, this.dateTime);
+}
+
+/* ==========================
+   HOME SCREEN
+========================== */
+class HomeScreen extends StatelessWidget {
+  HomeScreen({Key? key}) : super(key: key);
+
+  final String userName = "Guest";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF4A90E2),
+              Color(0xFF6BB7FF),
+              Color(0xFFD6ECFF),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Welcome, $userName",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Icon(Icons.person, color: Colors.white),
+                  ],
+                ),
+                const SizedBox(height: 40),
+
+                const Text(
+                  "PERSONALITY QUIZ",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  "Find out your personality in just 5 questions!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => QuizPage()),
+                    );
+                  },
+                  child: const Text(
+                    "Start",
+                    style: TextStyle(
+                      color: Color(0xFF4A90E2),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => HistoryScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "History",
+                    style: TextStyle(
+                      color: Color(0xFF4A90E2),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* ==========================
+   QUIZ SCREEN
+========================== */
+class QuizPage extends StatefulWidget {
+  const QuizPage({Key? key}) : super(key: key);
+
+  @override
+  _QuizPageState createState() => _QuizPageState();
+}
+
+class _QuizPageState extends State<QuizPage> {
+  int currentQuestionIndex = 0;
+  List<int> answers = List.filled(5, -1);
+
+  List<Map<String, dynamic>> questions = [
+    {
+      "question": "1. If you had a free day, what would you choose?",
+      "options": [
+        {"text": "Read a book", "value": 1},
+        {"text": "Hang out with friends", "value": 2},
+        {"text": "Explore somewhere new", "value": 3},
+        {"text": "Watch movies all day", "value": 4},
+      ],
+    },
+    {
+      "question": "2. How do you handle stress?",
+      "options": [
+        {"text": "Stay calm and think", "value": 1},
+        {"text": "Exercise or move around", "value": 2},
+        {"text": "Talk to someone", "value": 3},
+        {"text": "Ignore it and keep going", "value": 4},
+      ],
+    },
+    {
+      "question": "3. At a party, you are the one who…",
+      "options": [
+        {"text": "Observes quietly", "value": 1},
+        {"text": "Talks to everyone", "value": 2},
+        {"text": "Takes photos", "value": 3},
+        {"text": "Starts the music/dance", "value": 4},
+      ],
+    },
+    {
+      "question": "4. Your friends describe you as…",
+      "options": [
+        {"text": "Reliable", "value": 1},
+        {"text": "Energetic", "value": 2},
+        {"text": "Creative", "value": 3},
+        {"text": "Confident", "value": 4},
+      ],
+    },
+    {
+      "question": "5. When making decisions, you usually…",
+      "options": [
+        {"text": "Plan carefully", "value": 1},
+        {"text": "Go with your gut", "value": 2},
+        {"text": "Ask others for advice", "value": 3},
+        {"text": "Try something new", "value": 4},
+      ],
+    },
+  ];
+
+  void nextQuestion() {
+    if (currentQuestionIndex < questions.length - 1) {
+      setState(() {
+        currentQuestionIndex++;
+      });
+    } else {
+      showResult();
+    }
+  }
+
+  void previousQuestion() {
+    if (currentQuestionIndex > 0) {
+      setState(() {
+        currentQuestionIndex--;
+      });
+    }
+  }
+
+  void skipQuestion() {
+    setState(() {
+      answers[currentQuestionIndex] = -1;
+    });
+    nextQuestion();
+  }
+
+  void showResult() {
+    int score = 0;
+    for (int i = 0; i < answers.length; i++) {
+      if (answers[i] != -1) {
+        score += questions[i]["options"][answers[i]]["value"] as int;
+      }
+    }
+
+    String result = "";
+    if (score <= 5) {
+      result = "Calm & Thoughtful";
+    } else if (score <= 10) {
+      result = "Energetic & Social";
+    } else if (score <= 15) {
+      result = "Creative & Imaginative";
+    } else {
+      result = "Confident & Adventurous";
+    }
+
+    GlobalHistory.history.add(QuizRecord(result, List.from(answers), DateTime.now()));
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultPage(
+          result: result,
+          questions: questions,
+          answers: answers,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var currentQuestion = questions[currentQuestionIndex];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF4A90E2),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF4A90E2),
+              Color(0xFF6BB7FF),
+              Color(0xFFD6ECFF),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+
+                Center(
+                  child: Text(
+                    currentQuestion["question"],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+
+                ...List.generate(
+                  currentQuestion["options"].length,
+                  (index) => Card(
+                    elevation: 2,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: ListTile(
+                      title: Text(currentQuestion["options"][index]["text"]),
+                      onTap: () {
+                        setState(() {
+                          answers[currentQuestionIndex] = index;
+                        });
+
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          nextQuestion();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+
+                const Spacer(),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: previousQuestion,
+                      child: const Text(
+                        "Back",
+                        style: TextStyle(color: Color(0xFF4A90E2)),
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: skipQuestion,
+                      child: const Text(
+                        "Skip",
+                        style: TextStyle(color: Color(0xFF4A90E2)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* ==========================
+   RESULT SCREEN
+========================== */
+class ResultPage extends StatelessWidget {
+  final String result;
+  final List<Map<String, dynamic>> questions;
+  final List<int> answers;
+
+  const ResultPage({
+    Key? key,
+    required this.result,
+    required this.questions,
+    required this.answers,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF4A90E2),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF4A90E2),
+              Color(0xFF6BB7FF),
+              Color(0xFFD6ECFF),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                const Text(
+                  "YOUR RESULT",
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Text(
+                    result,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4A90E2),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: questions.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        title: Text(
+                          questions[index]["question"],
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          answers[index] == -1
+                              ? "No answer"
+                              : questions[index]["options"][answers[index]]
+                                  ["text"],
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => HomeScreen()),
+                        );
+                      },
+                      child: const Text(
+                        "Back to Home",
+                        style: TextStyle(
+                          color: Color(0xFF4A90E2),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => QuizPage()),
+                        );
+                      },
+                      child: const Text(
+                        "Restart Quiz",
+                        style: TextStyle(
+                          color: Color(0xFF4A90E2),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/* ==========================
+   HISTORY SCREEN
+========================== */
 class HistoryScreen extends StatelessWidget {
-  const HistoryScreen({Key? key}) : super(key: key);
+  HistoryScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -10,7 +545,6 @@ class HistoryScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Back Button
               Row(
                 children: [
                   IconButton(
@@ -33,7 +567,6 @@ class HistoryScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // If no history, show message
               if (GlobalHistory.history.isEmpty)
                 Expanded(
                   child: Center(
@@ -59,10 +592,13 @@ class HistoryScreen extends StatelessWidget {
                   child: ListView.builder(
                     itemCount: GlobalHistory.history.length,
                     itemBuilder: (context, index) {
+                      var item = GlobalHistory.history[index];
                       return Card(
                         color: Colors.white,
                         child: ListTile(
-                          title: Text(GlobalHistory.history[index]),
+                          title: Text(item.result),
+                          subtitle: Text(
+                              "Date: ${item.dateTime.toString().split('.')[0]}"),
                         ),
                       );
                     },
